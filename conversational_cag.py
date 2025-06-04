@@ -1,7 +1,17 @@
+import os
+import logging
+
 from openai import OpenAI
 from dotenv import load_dotenv
-import os
 from collections import deque
+from translate import translate_text
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -46,6 +56,9 @@ def ask_chatbot(client, user_input):
     return assistant_reply
 
 def main():
+    from google.oauth2 import service_account
+    credentials = service_account.Credentials.from_service_account_file('translate-api-python.json')
+
     print("Customer Support Chatbot (type 'exit' to quit)")
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
@@ -55,6 +68,7 @@ def main():
         user_input = input("\nYou: ")
         if user_input.lower() == "exit":
             break
+        user_input = translate_text(user_input, credentials=credentials)
         reply = ask_chatbot(client, user_input)
         print(f"Bot: {reply}")
 

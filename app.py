@@ -1,8 +1,20 @@
 import streamlit as st
+import os
+import json
+import logging
+
 from openai import OpenAI
 from collections import deque
 from dotenv import load_dotenv
-import os
+from translate import translate_text
+from google.oauth2 import service_account
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -26,6 +38,8 @@ st.title("Binge N Bash Customer Support Chatbot")
 st.sidebar.header("OpenAI API Settings")
 api_key = st.sidebar.text_input("API Key", type="password", value=os.environ.get("OPENROUTER_API_KEY", ""))
 base_url = st.sidebar.text_input("Base URL", value="https://openrouter.ai/api/v1")
+translation_credentials = st.sidebar.file_uploader("Google Translate credentials (Optional)", type="json",
+                                                   help="If credentials are provided, the user input is translated to english")
 
 model = "meta-llama/llama-3.3-70b-instruct:free"
 
@@ -54,6 +68,10 @@ if api_key and base_url:
 
         with st.spinner("Thinking..."):
             try:
+                if translation_credentials is not None:
+                    credentials = json.loads(translation_credentials.getvalue())
+                    credentials = service_account.Credentials.from_service_account_info(credentials)
+                    user_input = translate_text(user_input, credentials=credentials)
                 messages = build_messages(user_input)
                 response = client.chat.completions.create(
                     model=model,
@@ -67,6 +85,7 @@ if api_key and base_url:
                 st.session_state.conversation_history.append({"role": "assistant", "content": assistant_reply})
 
             except Exception as e:
+                logger.error(e)
                 assistant_reply = f"Error: {e}"
 
     # Display chat messages
