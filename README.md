@@ -54,7 +54,7 @@ python conversational_cag.py
 ```mermaid
 flowchart TD
     A[Input Question] --> B[Translate to English]
-    B --> C[Combine with Context<br/>(from conversational_cag.py)]
+    B --> C["Combine with Context<br>(from conversational_cag.py)"]
     C --> D[Pass to LLM]
     D --> E[Get Answer]
 ```
