@@ -1,4 +1,4 @@
-openai
-streamlit
-dotenv
+openai==1.78.1
+streamlit==1.45.1
+dotenv==0.9.9
 google-cloud-translate==2.0.1
